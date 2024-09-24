@@ -1,0 +1,113 @@
+{
+  "name": "codebasenotes",
+  "displayName": "CodebaseNotes",
+  "description": "Annotate your project's files & folders",
+  "version": "1.0.0",
+  "publisher": "Alex Tsirozidis",
+  "author": "Alex Tsirozidis <alex.tsirozidis@gmail.com>",
+  "homepage": "https://github.com/Firebrand/codebasenotes#readme",
+  "bugs": {
+    "url": "https://github.com/Firebrand/codebasenotes/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Firebrand/codebasenotes"
+  },
+  "license": "MIT",
+  "icon": "resources/icon.png",
+  "main": "./out/extension.js",
+  "scripts": {
+    "watch": "tsc -watch -p ./",
+    "build": "tsc -p ./",
+    "package": "vsce package",
+    "lint": "eslint \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "jsonc-parser": "^0.4.2",
+    "ignore": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.18.34",
+    "@types/vscode": "^1.73.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "@vscode/vsce": "^2.26.0",
+    "eslint": "^8.26.0",
+    "typescript": "^5.3.2"
+  },
+  "categories": [
+    "Extension Packs",
+    "Other"
+  ],
+  "keywords": [
+    "alex",
+    "tsirozidis",
+    "project",
+    "documentation",
+    "docs",
+    "files",
+    "folders",
+    "directories",
+    "notes",
+    "annotations",
+    "json",
+    "tree",
+    "compare"
+  ],
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onFileSystem:file",
+    "onView:folderTree"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "projectdoc-views",
+          "title": "CodebaseNotes",
+          "icon": "./resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "projectdoc-views": [
+        {
+          "id": "folderTree",
+          "name": "Project Tree"
+        },
+        {
+          "id": "annotationEditor",
+          "name": "Annotation Editor",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "projectdoc.openFileAndEditAnnotation",
+        "title": "CodebaseNotes: Open File and Edit Annotation"
+      },
+      {
+        "command": "projectdoc.editFolderAnnotation",
+        "title": "CodebaseNotes: Edit Folder Annotation"
+      },
+	  {
+		"command": "projectdoc.refreshTree",
+		"title": "CodebaseNotes: Refresh Project Tree"
+	  }
+    ],
+    "configuration": {
+      "title": "CodebaseNotes",
+      "properties": {
+        "projectdoc.autoSave": {
+          "type": "boolean",
+          "default": true,
+          "annotation": "Automatically save annotations when edited"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+body {
+    font-family: var(--vscode-font-family);
+    padding: 10px;
+}
+
+h2 {
+    margin-bottom: 10px;
+}
+
+textarea {
+    width: 100%;
+    resize: vertical;
+    font-family: var(--vscode-editor-font-family);
+    background-color: var(--vscode-input-background);
+    color: var(--vscode-input-foreground);
+    border: 1px solid var(--vscode-input-border);
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--vscode-focusBorder);
+}
