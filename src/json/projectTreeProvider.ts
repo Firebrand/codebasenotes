@@ -138,7 +138,7 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<string> {
 
             const annotation = this.annotationEditorProvider.getAnnotation(element);
 
-            const shortAnnotation = annotation.length > 15 ? annotation.substring(0, 15) + '...' : annotation;
+            const shortAnnotation = annotation.length > 30 ? annotation.substring(0, 30) + '...' : annotation;
 
             const treeItem = new vscode.TreeItem(
                 path.basename(element),
