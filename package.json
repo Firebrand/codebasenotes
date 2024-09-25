@@ -2,8 +2,8 @@
   "name": "codebasenotes",
   "displayName": "CodebaseNotes",
   "description": "Annotate your project's files & folders",
-  "version": "1.0.0",
-  "publisher": "Alex Tsirozidis",
+  "version": "1.0.1",
+  "publisher": "AlexTsirozidis",
   "author": "Alex Tsirozidis <alex.tsirozidis@gmail.com>",
   "homepage": "https://github.com/Firebrand/codebasenotes#readme",
   "bugs": {

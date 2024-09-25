@@ -2,6 +2,8 @@
 
 CodebaseNotes is a Visual Studio Code extension that allows you to annotate your codebase's files and folders with custom annotations. This tool helps developers and teams maintain clear documentation about the structure and purpose of different parts of their codebase.
 
+![CodebaseNotes Demo](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/demo.gif)
+
 ## Features
 
 - **Project Tree View**: A custom tree view in the sidebar that displays your codebase's structure.
@@ -53,10 +55,6 @@ Annotations are stored in a `.codebasenotes-annotations.json` file in your codeb
 ## Requirements
 
 - Visual Studio Code version 1.74.0 or higher
-
-## Known Issues
-
-- Annotations for files/folders ignored by `.gitignore` cannot be edited.
 
 ## Contributing
 
