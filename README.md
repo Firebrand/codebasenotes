@@ -1,6 +1,6 @@
 # CodebaseNotes
 
-An extension that allows you to add notes to your codebase's files AND folders directly on the project tree in the VS Code UI! This helps developers and teams maintain clear documentation about the structure and purpose of different parts of a codebase. Also serves as a great tool for personal learning or onboarding new developers to an existing codebase.
+An extension that allows you to add notes about your codebase's files AND folders directly on the project tree in the VS Code UI! This helps developers and teams maintain clear documentation about the structure and purpose of different parts of a codebase. Also serves as a great tool for personal learning or onboarding new developers to an existing codebase.
 
 ![CodebaseNotes Demo](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/demo2.gif)
 
