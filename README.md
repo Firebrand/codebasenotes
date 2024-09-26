@@ -1,8 +1,8 @@
 # CodebaseNotes
 
-CodebaseNotes is a Visual Studio Code extension that allows you to annotate your codebase's files and folders with custom annotations. This tool helps developers and teams maintain clear documentation about the structure and purpose of different parts of their codebase. Also a great for personal learning or onboarding new developers to an existing codebase.
+CodebaseNotes is a Visual Studio Code extension that allows you to add documentation to your codebase's files AND FOLDERS directly on the project tree. This helps developers and teams maintain clear documentation about the structure and purpose of different parts of a codebase. Also serves as a great tool for personal learning or onboarding new developers to an existing codebase.
 
-![CodebaseNotes Demo](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/demo.gif)
+![CodebaseNotes Demo](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/demo2.gif)
 
 ## Features
 
