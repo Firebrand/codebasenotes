@@ -10,13 +10,14 @@ interface AnnotationNode {
 }
 
 export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
-    private annotations: AnnotationNode = { type: 'dir', subNodes: new Map() };
     public static readonly viewType = 'annotationEditor';
-
     private _view?: vscode.WebviewView;
     private currentEditingItem: string | undefined;
+    private annotations: AnnotationNode = { type: 'dir', subNodes: new Map() };
     private annotationFilePath: string;
     private gitignoreParser: GitignoreParser;
+    private fileSystemWatcher: vscode.FileSystemWatcher;
+    private annotationsExist: boolean = true;
 
     private _onDidChangeAnnotation = new vscode.EventEmitter<string>();
     public readonly onDidChangeAnnotation = this._onDidChangeAnnotation.event;
@@ -24,7 +25,17 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
     constructor(private readonly _extensionUri: vscode.Uri, private workspaceRoot: string) {
         this.annotationFilePath = path.join(workspaceRoot, '.codebasenotes-annotations.json');
         this.gitignoreParser = new GitignoreParser(workspaceRoot);
+        this.fileSystemWatcher = this.createFileSystemWatcher();
         this.loadAnnotations();
+    }
+
+    private createFileSystemWatcher(): vscode.FileSystemWatcher {
+        const watcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(this.workspaceRoot, '.codebasenotes-annotations.json')
+        );
+        watcher.onDidDelete(() => this.handleAnnotationFileDeleted());
+        watcher.onDidCreate(() => this.loadAnnotations());
+        return watcher;
     }
 
     public resolveWebviewView(
@@ -33,31 +44,29 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
         _token: vscode.CancellationToken,
     ) {
         this._view = webviewView;
-
         webviewView.webview.options = {
             enableScripts: true,
             localResourceRoots: [this._extensionUri]
         };
-
         webviewView.webview.html = this._getHtmlForWebview(webviewView.webview);
+        this.setupWebviewMessageListener(webviewView);
+    }
 
+    private setupWebviewMessageListener(webviewView: vscode.WebviewView) {
         webviewView.webview.onDidReceiveMessage(data => {
-            switch (data.type) {
-                case 'annotationUpdated':
-                    this.updateAnnotation(data.value);
-                    break;
+            if (data.type === 'annotationUpdated') {
+                this.updateAnnotation(data.value);
             }
         });
     }
 
-    public editAnnotation(element: string) {
+    public async editAnnotation(element: string) {
         const relativePath = path.relative(this.workspaceRoot, element);
         if (this.gitignoreParser.isIgnored(relativePath)) {
             vscode.window.showInformationMessage('This file/folder is ignored by .gitignore and cannot be edited.');
             return;
         }
 
-        console.log('Editing annotation for:', element);
         if (this._view) {
             this.currentEditingItem = element;
             this._view.show?.(true);
@@ -66,9 +75,35 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
                 itemName: path.basename(element),
                 annotation: this.getAnnotation(element)
             });
+
+            await this.openReferencedFiles(element);
+            const document = await vscode.workspace.openTextDocument(element);
+            await vscode.window.showTextDocument(document, { preview: false });
         } else {
-            console.error('WebviewView is not available');
             vscode.window.showErrorMessage('Unable to open annotation editor. Please try again.');
+        }
+    }
+
+    private async openReferencedFiles(element: string) {
+        const annotation = this.getAnnotation(element);
+        const regex = /\s*\[\s*([^\]]+)\s*\]\s*/g;
+        let match;
+
+        while ((match = regex.exec(annotation)) !== null) {
+            const relativePath = match[1].trim().replace(/\\/g, '/');
+            const fullPath = path.join(this.workspaceRoot, relativePath);
+
+            if (fullPath === element) continue;
+
+            try {
+                const stat = await fs.stat(fullPath);
+                if (stat.isFile()) {
+                    const document = await vscode.workspace.openTextDocument(fullPath);
+                    await vscode.window.showTextDocument(document, { preview: false, preserveFocus: true });
+                }
+            } catch (error) {
+                console.error(`Error processing file: ${relativePath}`, error);
+            }
         }
     }
 
@@ -78,63 +113,49 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             if (!this.gitignoreParser.isIgnored(relativePath)) {
                 await this.setAnnotation(relativePath, annotation);
                 await this.saveAnnotations();
-                // Emit the event with the path of the updated item
                 this._onDidChangeAnnotation.fire(this.currentEditingItem);
             }
         }
     }
 
     public getAnnotation(element: string): string {
+        if (!this.annotationsExist) return '';
         const relativePath = path.relative(this.workspaceRoot, element);
-        if (this.gitignoreParser.isIgnored(relativePath)) {
-            return '';
-        }
-        const parts = relativePath.split(path.sep);
-        let node: AnnotationNode = this.annotations;
-        for (const part of parts) {
-            if (!node.subNodes.has(part)) {
-                return '';
-            }
-            node = node.subNodes.get(part)!;
-        }
-        return node.annotation || '';
+        if (this.gitignoreParser.isIgnored(relativePath)) return '';
+        return this.getAnnotationFromNode(this.annotations, relativePath.split(path.sep));
+    }
+
+    private getAnnotationFromNode(node: AnnotationNode, parts: string[]): string {
+        if (parts.length === 0) return node.annotation || '';
+        const nextNode = node.subNodes.get(parts[0]);
+        return nextNode ? this.getAnnotationFromNode(nextNode, parts.slice(1)) : '';
     }
 
     private async setAnnotation(relativePath: string, annotation: string) {
-        if (this.gitignoreParser.isIgnored(relativePath)) {
-            return;
-        }
+        this.annotationsExist = true;
+        if (this.gitignoreParser.isIgnored(relativePath)) return;
         const parts = relativePath.split(path.sep);
-        let node: AnnotationNode = this.annotations;
+        let node = this.annotations;
         for (let i = 0; i < parts.length; i++) {
             const part = parts[i];
             if (!node.subNodes.has(part)) {
-                const isLastPart = i === parts.length - 1;
                 const fullPath = path.join(this.workspaceRoot, ...parts.slice(0, i + 1));
-                const type = await this.getNodeType(fullPath, isLastPart);
+                const type = await this.getNodeType(fullPath, i === parts.length - 1);
                 node.subNodes.set(part, { type, subNodes: new Map() });
             }
-            if (i === parts.length - 1) {
-                const lastNode = node.subNodes.get(part)!;
-                lastNode.annotation = annotation;
-            } else {
-                node = node.subNodes.get(part)!;
-            }
+            node = node.subNodes.get(part)!;
         }
+        node.annotation = annotation;
     }
 
     public removeAnnotation(path: string): void {
         const relativePath = vscode.workspace.asRelativePath(path);
         const parts = relativePath.split('/');
         let node = this.annotations;
-        
         for (let i = 0; i < parts.length - 1; i++) {
-            if (!node.subNodes.has(parts[i])) {
-                return; // Path doesn't exist in our annotations
-            }
+            if (!node.subNodes.has(parts[i])) return;
             node = node.subNodes.get(parts[i])!;
         }
-
         node.subNodes.delete(parts[parts.length - 1]);
         this.saveAnnotations();
     }
@@ -150,14 +171,12 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
     private async getNodeType(fullPath: string, isFile: boolean): Promise<string> {
         try {
             const stats = await fs.stat(fullPath);
-            if (!isFile || stats.isDirectory()) {
-                return 'dir';
-            }
+            if (!isFile || stats.isDirectory()) return 'dir';
             const ext = path.extname(fullPath).slice(1).toLowerCase();
-            return ext || 'file';  // Use 'file' if there's no extension
+            return ext || 'file';
         } catch (error) {
             console.error(`Error getting node type for ${fullPath}:`, error);
-            return 'file'; // Default to 'file' if we can't determine the type
+            return 'file';
         }
     }
 
@@ -186,30 +205,26 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             const data = await fs.readFile(this.annotationFilePath, 'utf8');
             this.annotations = this.deserializeAnnotations(JSON.parse(data));
             this.cleanupIgnoredAnnotations(this.annotations);
+            this.annotationsExist = true;
         } catch (error) {
-            if (error instanceof Error && 'code' in error) {
-                if (error.code !== 'ENOENT') {
-                    console.error('Error loading annotations:', error.message);
-                }
+            if (error instanceof Error && 'code' in error && (error as any).code === 'ENOENT') {
+                console.log('Annotation file does not exist');
+                this.annotationsExist = false;
             } else {
-                console.error('Unknown error loading annotations:', error);
+                console.error('Error loading annotations:', error);
             }
         }
     }
 
     private async saveAnnotations() {
+        if (!this.annotationsExist) return;
         try {
             this.cleanupIgnoredAnnotations(this.annotations);
             const data = JSON.stringify(this.serializeAnnotations(this.annotations), null, 2);
             await fs.writeFile(this.annotationFilePath, data);
         } catch (error) {
-            if (error instanceof Error) {
-                console.error('Error saving annotations:', error.message);
-                vscode.window.showErrorMessage(`Failed to save annotations: ${error.message}`);
-            } else {
-                console.error('Unknown error saving annotations:', error);
-                vscode.window.showErrorMessage('Failed to save annotations due to an unknown error');
-            }
+            console.error('Error saving annotations:', error);
+            vscode.window.showErrorMessage(`Failed to save annotations: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
@@ -220,7 +235,6 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
                 node.subNodes.delete(key);
             } else {
                 this.cleanupIgnoredAnnotations(childNode, childPath);
-                // Remove empty nodes
                 if (childNode.subNodes.size === 0 && childNode.annotation === undefined) {
                     node.subNodes.delete(key);
                 }
@@ -229,31 +243,35 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
     }
 
     private serializeAnnotations(node: AnnotationNode): any {
-        const result: any = {
-            type: node.type
-        };
-        if (node.annotation !== undefined) {
-            result.annotation = node.annotation;
-        }
+        const result: any = { type: node.type };
+        if (node.annotation !== undefined) result.annotation = node.annotation;
         if (node.subNodes.size > 0) {
-            result.subNodes = {};
-            for (const [key, value] of node.subNodes) {
-                result.subNodes[key] = this.serializeAnnotations(value);
-            }
+            result.subNodes = Object.fromEntries(
+                Array.from(node.subNodes.entries()).map(([key, value]) => [key, this.serializeAnnotations(value)])
+            );
         }
         return result;
     }
 
     private deserializeAnnotations(data: any): AnnotationNode {
         const node: AnnotationNode = { type: data.type, subNodes: new Map() };
-        if (data.annotation !== undefined) {
-            node.annotation = data.annotation;
-        }
+        if (data.annotation !== undefined) node.annotation = data.annotation;
         if (data.subNodes) {
             for (const [key, value] of Object.entries(data.subNodes)) {
                 node.subNodes.set(key, this.deserializeAnnotations(value as any));
             }
         }
         return node;
+    }
+
+    private handleAnnotationFileDeleted() {
+        console.log('Annotation file deleted by user');
+        this.annotationsExist = false;
+        this.annotations = { type: 'dir', subNodes: new Map() };
+        this._onDidChangeAnnotation.fire('');
+    }
+
+    dispose() {
+        this.fileSystemWatcher.dispose();
     }
 }

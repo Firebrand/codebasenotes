@@ -1,6 +1,6 @@
 # CodebaseNotes
 
-An extension that allows you to add notes about your codebase's files AND folders directly on the project tree in the VS Code UI! This helps developers and teams maintain clear documentation about the structure and purpose of different parts of a codebase. Also serves as a great tool for personal learning or onboarding new developers to an existing codebase.
+An extension that allows you to add notes about your codebase's files AND folders directly on the project tree in the VS Code UI. The aim is to help developers and teams maintain clear documentation about the structure and purpose of different parts of their codebase. Also serves as a great tool for personal learning or onboarding. All notes are stored into a single json file that can be checked into a repo.
 
 ![CodebaseNotes Demo](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/demo2.gif)
 
@@ -8,9 +8,9 @@ An extension that allows you to add notes about your codebase's files AND folder
 
 - **Project Tree View**: A custom tree view in the sidebar that displays your codebase's structure.
 - **File and Folder Annotations**: Add annotations to files and folders directly within VS Code.
-- **Annotation Editor**: A dedicated webview for editing annotations.
 - **Gitignore Integration**: Automatically respects your project's `.gitignore` file.
 - **Auto-save**: Annotations are automatically saved as you type.
+- **File bundles**: Add relative path chunks to your notes to open multiple files simultaneously
 
 ## Installation
 
@@ -32,10 +32,12 @@ An extension that allows you to add notes about your codebase's files AND folder
 2. The Annotation Editor will open, allowing you to add or edit the annotation.
 3. Type your annotation in the text area.
 4. The annotation will auto-save as you type.
+5. In your annotation, enclose a relative path to a file in square brackets (ex. [src/app/index.js]). Whenever you click on the current file (the one that has the annotation), the referenced file will also open!
 
 ### Opening Files
 
 - Clicking on a file in the Project Tree will open it in the editor and allow you to edit its annotation.
+- Everytime you click on a file/folder in the Project Tree, any open files you have in the Editor will close. This is intentional.
 
 ### Commands
 

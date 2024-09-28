@@ -6,18 +6,10 @@
     let debounceTimer;
 
     window.addEventListener('message', event => {
-        const message = event.data;
-        try {
-            switch (message.type) {
-                case 'setAnnotation':
-                    itemNameElement.textContent = message.itemName;
-                    annotationTextarea.value = message.annotation;
-                    break;
-                default:
-                    console.warn(`Unknown message type: ${message.type}`);
-            }
-        } catch (error) {
-            console.error('Error processing message:', error);
+        const { type, itemName, annotation } = event.data;
+        if (type === 'setAnnotation') {
+            itemNameElement.textContent = itemName;
+            annotationTextarea.value = annotation;
         }
     });
 
@@ -30,4 +22,4 @@
             });
         }, 300);
     });
-}());
+})();
