@@ -60,22 +60,22 @@
   "activationEvents": [
     "onStartupFinished",
     "onFileSystem:file",
-    "onView:folderTree"
+    "onView:projectTree"
   ],
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "projectdoc-views",
+          "id": "codebaseNotes",
           "title": "CodebaseNotes",
           "icon": "./resources/icon.svg"
         }
       ]
     },
     "views": {
-      "projectdoc-views": [
+      "codebaseNotes": [
         {
-          "id": "folderTree",
+          "id": "projectTree",
           "name": "Project Tree"
         },
         {
@@ -87,44 +87,44 @@
     },
     "commands": [
       {
-        "command": "projectdoc.openFileAndEditAnnotation",
+        "command": "codebaseNotes.openFileAndEditAnnotation",
         "title": "Open File and Edit Annotation"
       },
       {
-        "command": "projectdoc.editFolderAnnotation",
+        "command": "codebaseNotes.editFolderAnnotation",
         "title": "Edit Folder Annotation"
       },
       {
-        "command": "projectdoc.refreshTree",
+        "command": "codebaseNotes.refreshTree",
         "title": "Refresh Project Tree"
       },
       {
-        "command": "projectdoc.copyRelativePath",
+        "command": "codebaseNotes.copyRelativePath",
         "title": "Copy Relative Path"
       },
       {
-        "command": "projectdoc.revealInCodebaseNotes",
+        "command": "codebaseNotes.revealInCodebaseNotes",
         "title": "Reveal in CodebaseNotes"
       }
     ],
     "menus": {
       "view/item/context": [
         {
-          "command": "projectdoc.copyRelativePath",
-          "when": "view == folderTree",
+          "command": "codebaseNotes.copyRelativePath",
+          "when": "view == projectTree",
           "group": "navigation"
         }
       ],
       "editor/title/context": [
         {
-          "command": "projectdoc.revealInCodebaseNotes",
+          "command": "codebaseNotes.revealInCodebaseNotes",
           "when": "resourceScheme == 'file'",
           "group": "navigation"
         }
       ],
       "explorer/context": [
         {
-          "command": "projectdoc.revealInCodebaseNotes",
+          "command": "codebaseNotes.revealInCodebaseNotes",
           "group": "navigation",
           "when": "resourceLangId"
         }
@@ -133,7 +133,7 @@
     "configuration": {
       "title": "CodebaseNotes",
       "properties": {
-        "projectdoc.autoSave": {
+        "codebaseNotes.autoSave": {
           "type": "boolean",
           "default": true,
           "annotation": "Automatically save annotations when edited"

@@ -132,7 +132,7 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<string> {
             treeItem.tooltip = annotation || (isDirectory ? "Click to edit folder annotation" : "Click to open file and edit annotation");
 
             treeItem.command = {
-                command: 'projectdoc.clearAndOpenItem',
+                command: 'codebaseNotes.clearAndOpenItem',
                 title: 'Open Item',
                 arguments: [element, isDirectory]
             };

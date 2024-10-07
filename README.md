@@ -54,7 +54,7 @@ CodebaseNotes adds the following commands to VS Code:
 
 You can configure CodebaseNotes through VS Code's settings:
 
-- `projectdoc.autoSave`: Enable/disable auto-saving of annotations (default: true)
+- `codebaseNotes.autoSave`: Enable/disable auto-saving of annotations (default: true)
 
 ## File Storage
 

@@ -15,7 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
     const annotationEditorProvider = new AnnotationEditorProvider(context.extensionUri, workspaceRoot);
     const projectTreeProvider = new ProjectTreeProvider(workspaceRoot, annotationEditorProvider);
 
-    const treeView = vscode.window.createTreeView('folderTree', { 
+    const treeView = vscode.window.createTreeView('projectTree', { 
         treeDataProvider: projectTreeProvider, 
         showCollapseAll: true 
     });
@@ -36,29 +36,29 @@ function registerCommands(
     workspaceRoot: string
 ): vscode.Disposable[] {
     return [
-        vscode.commands.registerCommand('projectdoc.clearAndOpenItem', async (element: string, isDirectory: boolean) => {
+        vscode.commands.registerCommand('codebaseNotes.clearAndOpenItem', async (element: string, isDirectory: boolean) => {
             await vscode.commands.executeCommand('workbench.action.closeAllEditors');
             if (isDirectory) {
-                await vscode.commands.executeCommand('folderTree.editFolderAnnotation', element);
+                await vscode.commands.executeCommand('projectTree.editFolderAnnotation', element);
             } else {
-                await vscode.commands.executeCommand('folderTree.openFileAndEditAnnotation', element);
+                await vscode.commands.executeCommand('projectTree.openFileAndEditAnnotation', element);
             }
         }),
-        vscode.commands.registerCommand('folderTree.openFileAndEditAnnotation', async (element: string) => {
+        vscode.commands.registerCommand('projectTree.openFileAndEditAnnotation', async (element: string) => {
             const document = await vscode.workspace.openTextDocument(element);
             await vscode.window.showTextDocument(document);
             annotationEditorProvider.editAnnotation(element);
         }),
-        vscode.commands.registerCommand('folderTree.editFolderAnnotation', (element: string) => {
+        vscode.commands.registerCommand('projectTree.editFolderAnnotation', (element: string) => {
             annotationEditorProvider.editAnnotation(element);
         }),
-        vscode.commands.registerCommand('projectdoc.refreshTree', () => projectTreeProvider.refresh()),
-        vscode.commands.registerCommand('projectdoc.copyRelativePath', (element: string) => {
+        vscode.commands.registerCommand('codebaseNotes.refreshTree', () => projectTreeProvider.refresh()),
+        vscode.commands.registerCommand('codebaseNotes.copyRelativePath', (element: string) => {
             const relativePath = path.relative(workspaceRoot, element);
             vscode.env.clipboard.writeText(`[${relativePath}]`);
             vscode.window.showInformationMessage(`Copied relative path: ${relativePath}`);
         }),
-        vscode.commands.registerCommand('projectdoc.revealInCodebaseNotes', (uri: vscode.Uri) => {
+        vscode.commands.registerCommand('codebaseNotes.revealInCodebaseNotes', (uri: vscode.Uri) => {
             if (uri && uri.scheme === 'file') {
                 treeView.reveal(uri.fsPath, { select: true, focus: true, expand: true });
             } else {
@@ -82,14 +82,14 @@ function setupEventListeners(
                 editor => editor.document.uri.scheme === 'codebasenotes'
             );
             if (isCodeBaseNotesActive) {
-                vscode.commands.executeCommand('projectdoc.refreshTree');
+                vscode.commands.executeCommand('codebaseNotes.refreshTree');
                 revealActiveFileInTree(treeView, workspaceRoot);
             }
         }),
-        vscode.window.registerWebviewViewProvider('projectdoc-views', {
+        vscode.window.registerWebviewViewProvider('codebaseNotes', {
             resolveWebviewView: () => {
                 isCodeBaseNotesActive = true;
-                vscode.commands.executeCommand('projectdoc.refreshTree');
+                vscode.commands.executeCommand('codebaseNotes.refreshTree');
                 revealActiveFileInTree(treeView, workspaceRoot);
             }
         }),
