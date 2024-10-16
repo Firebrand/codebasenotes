@@ -101,10 +101,6 @@
       {
         "command": "codebaseNotes.copyRelativePath",
         "title": "Copy Relative Path"
-      },
-      {
-        "command": "codebaseNotes.revealInCodebaseNotes",
-        "title": "Reveal in CodebaseNotes"
       }
     ],
     "menus": {
@@ -113,20 +109,6 @@
           "command": "codebaseNotes.copyRelativePath",
           "when": "view == projectTree",
           "group": "navigation"
-        }
-      ],
-      "editor/title/context": [
-        {
-          "command": "codebaseNotes.revealInCodebaseNotes",
-          "when": "resourceScheme == 'file'",
-          "group": "navigation"
-        }
-      ],
-      "explorer/context": [
-        {
-          "command": "codebaseNotes.revealInCodebaseNotes",
-          "group": "navigation",
-          "when": "resourceLangId"
         }
       ]
     },
