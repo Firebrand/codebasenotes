@@ -35,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
         ...registerCommands(projectTreeProvider, annotationEditorProvider, treeView, workspaceRoot)
     );
 
-    setupEventListeners(context, projectTreeProvider, treeView, workspaceRoot);
+    setupEventListeners(context, projectTreeProvider, treeView, workspaceRoot, annotationEditorProvider);
 }
 
 function registerCommands(
@@ -74,7 +74,8 @@ function setupEventListeners(
     context: vscode.ExtensionContext, 
     projectTreeProvider: ProjectTreeProvider, 
     treeView: vscode.TreeView<string>,
-    workspaceRoot: string
+    workspaceRoot: string,
+    annotationEditorProvider: AnnotationEditorProvider
 ) {
     let isCodeBaseNotesActive = false;
 
@@ -110,6 +111,16 @@ function setupEventListeners(
         vscode.commands.executeCommand('codebaseNotes.refreshTree');
         vscode.commands.executeCommand('codebaseNotes.revealActiveFile');
     }
+
+    treeView.onDidChangeVisibility(async (e) => {
+        if (e.visible) {
+            const activeEditor = vscode.window.activeTextEditor;
+            if (activeEditor) {
+                await revealAndLoadAnnotation(activeEditor.document.uri, treeView, workspaceRoot, projectTreeProvider, annotationEditorProvider);
+            }
+        }
+        isTreeViewVisible = e.visible;
+    });
 }
 
 async function revealFileInTree(
@@ -149,3 +160,16 @@ async function expandDirectoryIfNeeded(dirPath: string, projectTreeProvider: Pro
 }
 
 export function deactivate() {}
+
+async function revealAndLoadAnnotation(
+    uri: vscode.Uri,
+    treeView: vscode.TreeView<string>,
+    workspaceRoot: string,
+    projectTreeProvider: ProjectTreeProvider,
+    annotationEditorProvider: AnnotationEditorProvider
+) {
+    if (uri && uri.scheme === 'file' && uri.fsPath.startsWith(workspaceRoot)) {
+        await revealFileInTree(uri, treeView, workspaceRoot, projectTreeProvider);
+        annotationEditorProvider.editAnnotation(uri.fsPath);
+    }
+}
