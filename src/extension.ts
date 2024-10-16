@@ -4,15 +4,10 @@ import * as fs from 'fs/promises';
 import { ProjectTreeProvider } from './projectTreeProvider';
 import { AnnotationEditorProvider } from './annotationEditor';
 
-let outputChannel: vscode.OutputChannel;
 let isTreeViewVisible: boolean = false;
 
 export function activate(context: vscode.ExtensionContext) {
     console.log('Activating CodebaseNotes extension');
-
-    outputChannel = vscode.window.createOutputChannel("CodebaseNotes");
-    outputChannel.appendLine('CodebaseNotes activated');
-
 
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceRoot) {
@@ -86,7 +81,6 @@ function setupEventListeners(
     context.subscriptions.push(
         vscode.window.onDidChangeActiveTextEditor(editor => {
             if (editor && editor.document.uri.scheme === 'file') {
-                outputChannel.appendLine(`Active editor changed to: ${editor.document.uri.fsPath}`);
                 revealFileInTree(editor.document.uri, treeView, workspaceRoot, projectTreeProvider);
             }
             if (isCodeBaseNotesActive && editor) {
@@ -126,8 +120,6 @@ async function revealFileInTree(
 ) {
     try {
         if (uri && uri.scheme === 'file' && uri.fsPath.startsWith(workspaceRoot) && isTreeViewVisible) {
-            outputChannel.appendLine(`Attempting to reveal: ${uri.fsPath}`);
-
             const relativePath = path.relative(workspaceRoot, uri.fsPath);
             const pathParts = relativePath.split(path.sep);
             
@@ -139,12 +131,8 @@ async function revealFileInTree(
 
             // Reveal the file
             await treeView.reveal(uri.fsPath, { select: true, focus: false, expand: 3 });
-            outputChannel.appendLine(`File revealed successfully: ${uri.fsPath}`);
-        } else {
-            outputChannel.appendLine(`Invalid file path or not in workspace: ${uri?.fsPath}`);
         }
     } catch (error) {
-        outputChannel.appendLine(`Error revealing file: ${error}`);
         console.error('Error revealing file:', error);
     }
 }
@@ -156,10 +144,8 @@ async function expandDirectoryIfNeeded(dirPath: string, projectTreeProvider: Pro
             await projectTreeProvider.getChildren(dirPath);
         }
     } catch (error) {
-        outputChannel.appendLine(`Error processing path ${dirPath}: ${error}`);
+        console.error(`Error processing path ${dirPath}:`, error);
     }
 }
 
-export function deactivate() {
-    outputChannel.dispose();
-}
+export function deactivate() {}
