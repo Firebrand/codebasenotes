@@ -80,12 +80,11 @@ function setupEventListeners(
     let isCodeBaseNotesActive = false;
 
     context.subscriptions.push(
-        vscode.window.onDidChangeActiveTextEditor(editor => {
+        vscode.window.onDidChangeActiveTextEditor(async (editor) => {
             if (editor && editor.document.uri.scheme === 'file') {
-                revealFileInTree(editor.document.uri, treeView, workspaceRoot, projectTreeProvider);
-            }
-            if (isCodeBaseNotesActive && editor) {
-                vscode.commands.executeCommand('codebaseNotes.revealActiveFile');
+                if (isTreeViewVisible) {
+                    await revealAndLoadAnnotation(editor.document.uri, treeView, workspaceRoot, projectTreeProvider, annotationEditorProvider);
+                }
             }
         }),
         vscode.window.onDidChangeVisibleTextEditors(() => {

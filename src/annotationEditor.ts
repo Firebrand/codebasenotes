@@ -18,6 +18,8 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
     private gitignoreParser: GitignoreParser;
     private fileSystemWatcher: vscode.FileSystemWatcher;
     private annotationsExist: boolean = true;
+    private openedAnnotations: Set<string> = new Set();
+    private lastOpenedTimestamp: number = 0;
 
     private _onDidChangeAnnotation = new vscode.EventEmitter<string>();
     public readonly onDidChangeAnnotation = this._onDidChangeAnnotation.event;
@@ -67,6 +69,11 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             return;
         }
 
+        const currentTime = Date.now();
+        if (currentTime - this.lastOpenedTimestamp > 5000) {
+            this.openedAnnotations.clear();
+        }
+
         if (this._view) {
             this.currentEditingItem = element;
             this._view.show?.(true);
@@ -76,9 +83,14 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
                 annotation: this.getAnnotation(element)
             });
 
-            await this.openReferencedFiles(element);
-            const document = await vscode.workspace.openTextDocument(element);
-            await vscode.window.showTextDocument(document, { preview: false });
+            if (!this.openedAnnotations.has(element)) {
+                await this.openReferencedFiles(element);
+                await vscode.workspace.openTextDocument(element).then(doc => 
+                    vscode.window.showTextDocument(doc, { preview: false })
+                );
+                this.openedAnnotations.add(element);
+                this.lastOpenedTimestamp = currentTime;
+            }
         } else {
             vscode.window.showErrorMessage('Unable to open annotation editor. Please try again.');
         }
@@ -88,6 +100,7 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
         const annotation = this.getAnnotation(element);
         const regex = /\s*\[\s*([^\]]+)\s*\]\s*/g;
         let match;
+        const filesToOpen = [];
 
         while ((match = regex.exec(annotation)) !== null) {
             const relativePath = match[1].trim().replace(/\\/g, '/');
@@ -98,13 +111,22 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             try {
                 const stat = await fs.stat(fullPath);
                 if (stat.isFile()) {
-                    const document = await vscode.workspace.openTextDocument(fullPath);
-                    await vscode.window.showTextDocument(document, { preview: false, preserveFocus: true });
+                    filesToOpen.push(fullPath);
                 }
             } catch (error) {
                 console.error(`Error processing file: ${relativePath}`, error);
             }
         }
+
+        // Open referenced files
+        for (const file of filesToOpen) {
+            const document = await vscode.workspace.openTextDocument(file);
+            await vscode.window.showTextDocument(document, { preview: false, preserveFocus: true });
+        }
+
+        // Open the original document last
+        const originalDocument = await vscode.workspace.openTextDocument(element);
+        await vscode.window.showTextDocument(originalDocument, { preview: false });
     }
 
     private async updateAnnotation(annotation: string) {
