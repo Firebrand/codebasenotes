@@ -80,9 +80,8 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             this._view.show?.(true);
            
             if (!this.currentElements.has(element)) {
-                console.log("Opening referenced files for " + element);
                 await this.openReferencedFiles(element);
-                this.currentElements.clear();
+                this.scheduleClearCurrentElements();
             }
             await this._view.webview.postMessage({ 
                 type: 'setAnnotation', 
@@ -90,12 +89,15 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
                 annotation: this.getAnnotation(element)
             });
             this.incrementingId++;
-            console.log("Showing annotation for " + element + " with id " + this.incrementingId);
-
-            
         } else {
             vscode.window.showErrorMessage('Unable to open annotation editor. Please try again.');
         }
+    }
+
+    private scheduleClearCurrentElements() {
+        setTimeout(() => {
+            this.currentElements.clear();
+        }, 3000);
     }
 
     private async openReferencedFiles(element: string) {
@@ -123,15 +125,12 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
             filesToOpen.add(element);
             this.currentElements.add(element);
-            console.log("Files to open:");
-            console.log(filesToOpen);
         }
 
         for (const file of filesToOpen) {
             try {
                 const document = await vscode.workspace.openTextDocument(file);
                 await vscode.window.showTextDocument(document, { preview: false });
-                console.log("Opening file reference: " + file);
             } catch (error) {
                 console.error(`Error opening file: ${file}`, error);
             }
@@ -239,7 +238,6 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             this.annotationsExist = true;
         } catch (error) {
             if (error instanceof Error && 'code' in error && (error as any).code === 'ENOENT') {
-                console.log('Annotation file does not exist');
                 this.annotationsExist = false;
             } else {
                 console.error('Error loading annotations:', error);
@@ -296,7 +294,6 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
     }
 
     private handleAnnotationFileDeleted() {
-        console.log('Annotation file deleted by user');
         this.annotationsExist = false;
         this.annotations = { type: 'dir', subNodes: new Map() };
         this._onDidChangeAnnotation.fire('');
