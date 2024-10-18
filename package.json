@@ -58,9 +58,7 @@
     "vscode": "^1.74.0"
   },
   "activationEvents": [
-    "onStartupFinished",
-    "onFileSystem:file",
-    "onView:projectTree"
+    "onStartupFinished"
   ],
   "contributes": {
     "viewsContainers": {

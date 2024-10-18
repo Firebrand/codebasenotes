@@ -71,14 +71,18 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             return;
         }
 
+        if (!this._view) {
+            await this.ensureWebviewInitialized();
+        }
+
         if (this._view) {
             this.currentEditingItem = element;
             this._view.show?.(true);
            
             if (!this.currentElements.has(element)) {
                 console.log("Opening referenced files for " + element);
-                // Wait for openReferencedFiles to complete
                 await this.openReferencedFiles(element);
+                this.currentElements.clear();
             }
             await this._view.webview.postMessage({ 
                 type: 'setAnnotation', 
@@ -115,11 +119,13 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             }
         }
 
-        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-        filesToOpen.add(element);
-        this.currentElements.add(element);
-        console.log("Files to open:");
-        console.log(filesToOpen);
+        if (filesToOpen.size > 0) {
+            await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+            filesToOpen.add(element);
+            this.currentElements.add(element);
+            console.log("Files to open:");
+            console.log(filesToOpen);
+        }
 
         for (const file of filesToOpen) {
             try {
@@ -294,6 +300,35 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
         this.annotationsExist = false;
         this.annotations = { type: 'dir', subNodes: new Map() };
         this._onDidChangeAnnotation.fire('');
+    }
+
+    private async ensureWebviewInitialized(): Promise<void> {
+            // Wait for the webview to be initialized
+            return new Promise((resolve) => {
+                let disposable: vscode.Disposable | undefined;
+
+                const checkInterval = setInterval(() => {
+                    if (this._view) {
+                        clearInterval(checkInterval);
+                        if (disposable) {
+                            disposable.dispose();
+                        }
+                        resolve();
+                    } else if (!disposable) {
+                        try {
+                            disposable = vscode.window.registerWebviewViewProvider(AnnotationEditorProvider.viewType, this, {
+                                webviewOptions: {
+                                    retainContextWhenHidden: true,
+                                }
+                            });
+                        } catch (error) {
+                            console.error('Error registering webview view provider:', error);
+                            clearInterval(checkInterval);
+                            resolve(); // Resolve anyway to prevent hanging
+                        }
+                }
+            }, 200);
+        });
     }
 
     dispose() {
