@@ -56,10 +56,10 @@ function registerCommands(
         vscode.commands.registerCommand('projectTree.openFileAndEditAnnotation', async (element: string) => {
             const document = await vscode.workspace.openTextDocument(element);
             await vscode.window.showTextDocument(document);
-            annotationEditorProvider.editAnnotation(element);
+            await annotationEditorProvider.editAnnotation(element);
         }),
-        vscode.commands.registerCommand('projectTree.editFolderAnnotation', (element: string) => {
-            annotationEditorProvider.editAnnotation(element);
+        vscode.commands.registerCommand('projectTree.editFolderAnnotation', async (element: string) => {
+            await annotationEditorProvider.editAnnotation(element);
         }),
         vscode.commands.registerCommand('codebaseNotes.refreshTree', () => projectTreeProvider.refresh()),
         vscode.commands.registerCommand('codebaseNotes.copyRelativePath', (element: string) => {
@@ -169,6 +169,6 @@ async function revealAndLoadAnnotation(
 ) {
     if (uri && uri.scheme === 'file' && uri.fsPath.startsWith(workspaceRoot)) {
         await revealFileInTree(uri, treeView, workspaceRoot, projectTreeProvider);
-        annotationEditorProvider.editAnnotation(uri.fsPath);
+        await annotationEditorProvider.editAnnotation(uri.fsPath);
     }
 }

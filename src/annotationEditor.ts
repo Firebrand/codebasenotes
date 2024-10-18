@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import { GitignoreParser } from './gitignoreUtils';
 
 interface AnnotationNode {
@@ -20,6 +21,7 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
     private annotationsExist: boolean = true;
     private currentElements: Set<string> = new Set();
     private lastEditAnnotationTime: number = 0;
+    private incrementingId: number = 0;
 
     private _onDidChangeAnnotation = new vscode.EventEmitter<string>();
     public readonly onDidChangeAnnotation = this._onDidChangeAnnotation.event;
@@ -63,7 +65,6 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
     }
 
     public async editAnnotation(element: string) {
-
         const relativePath = path.relative(this.workspaceRoot, element);
         if (this.gitignoreParser.isIgnored(relativePath)) {
             vscode.window.showInformationMessage('This file/folder is ignored by .gitignore and cannot be edited.');
@@ -72,25 +73,26 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
 
         if (this._view) {
             this.currentEditingItem = element;
-            await this._view.show?.(true);
+            this._view.show?.(true);
+           
+            if (!this.currentElements.has(element)) {
+                console.log("Opening referenced files for " + element);
+                // Wait for openReferencedFiles to complete
+                await this.openReferencedFiles(element);
+            }
             await this._view.webview.postMessage({ 
                 type: 'setAnnotation', 
                 itemName: path.basename(element),
                 annotation: this.getAnnotation(element)
             });
-            console.log("Showing annotation for " + element);
+            this.incrementingId++;
+            console.log("Showing annotation for " + element + " with id " + this.incrementingId);
 
-            // Then open referenced files if the element is not in currentElements
-            if (!this.currentElements.has(element)) {
-                console.log("Opening referenced files for " + element);
-                await this.openReferencedFiles(element);
-                // this.currentElements.clear();
-            }
+            
         } else {
-            await vscode.window.showErrorMessage('Unable to open annotation editor. Please try again.');
+            vscode.window.showErrorMessage('Unable to open annotation editor. Please try again.');
         }
     }
-    
 
     private async openReferencedFiles(element: string) {
         const annotation = this.getAnnotation(element);
@@ -103,7 +105,7 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             const fullPath = path.join(this.workspaceRoot, relativePath);
 
             try {
-                const stat = await fs.stat(fullPath);
+                const stat = fsSync.statSync(fullPath);
                 if (stat.isFile()) {
                     filesToOpen.add(fullPath);
                     this.currentElements.add(fullPath);
@@ -111,33 +113,38 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             } catch (error) {
                 console.error(`Error processing file: ${relativePath}`, error);
             }
-
-            
         }
 
-        // Add the original file to filesToOpen
-        await filesToOpen.add(element);
-        await this.currentElements.add(element);
-        const originalDocument = await vscode.workspace.openTextDocument(element);
-        await vscode.window.showTextDocument(originalDocument, { preview: false });
-        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+        filesToOpen.add(element);
+        this.currentElements.add(element);
         console.log("Files to open:");
         console.log(filesToOpen);
 
-        // Open referenced files if they're not already open
         for (const file of filesToOpen) {
-            const document = await vscode.workspace.openTextDocument(file);
-            await vscode.window.showTextDocument(document, { preview: false, preserveFocus: true });
-            console.log("Showing file reference: " + file);
+            try {
+                const document = await vscode.workspace.openTextDocument(file);
+                await vscode.window.showTextDocument(document, { preview: false, preserveFocus: true });
+                console.log("Showing file reference: " + file);
+            } catch (error) {
+                console.error(`Error opening file: ${file}`, error);
+            }
+        }
+
+        // Open the original document last and focus on it
+        try {
+            const originalDocument = await vscode.workspace.openTextDocument(element);
+            await vscode.window.showTextDocument(originalDocument, { preview: false });
+        } catch (error) {
+            console.error(`Error opening original file: ${element}`, error);
         }
     }
 
-    private async updateAnnotation(annotation: string) {
+    private updateAnnotation(annotation: string) {
         if (this.currentEditingItem) {
             const relativePath = path.relative(this.workspaceRoot, this.currentEditingItem);
             if (!this.gitignoreParser.isIgnored(relativePath)) {
-                await this.setAnnotation(relativePath, annotation);
-                await this.saveAnnotations();
+                this.setAnnotation(relativePath, annotation);
+                this.saveAnnotations();
                 this._onDidChangeAnnotation.fire(this.currentEditingItem);
             }
         }
@@ -156,7 +163,7 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
         return nextNode ? this.getAnnotationFromNode(nextNode, parts.slice(1)) : '';
     }
 
-    private async setAnnotation(relativePath: string, annotation: string) {
+    private setAnnotation(relativePath: string, annotation: string) {
         this.annotationsExist = true;
         if (this.gitignoreParser.isIgnored(relativePath)) return;
         const parts = relativePath.split(path.sep);
@@ -165,7 +172,7 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             const part = parts[i];
             if (!node.subNodes.has(part)) {
                 const fullPath = path.join(this.workspaceRoot, ...parts.slice(0, i + 1));
-                const type = await this.getNodeType(fullPath, i === parts.length - 1);
+                const type = this.getNodeType(fullPath, i === parts.length - 1);
                 node.subNodes.set(part, { type, subNodes: new Map() });
             }
             node = node.subNodes.get(part)!;
@@ -193,9 +200,9 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
         }
     }
 
-    private async getNodeType(fullPath: string, isFile: boolean): Promise<string> {
+    private getNodeType(fullPath: string, isFile: boolean): string {
         try {
-            const stats = await fs.stat(fullPath);
+            const stats = fsSync.statSync(fullPath);
             if (!isFile || stats.isDirectory()) return 'dir';
             const ext = path.extname(fullPath).slice(1).toLowerCase();
             return ext || 'file';
@@ -225,9 +232,9 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
         </html>`;
     }
 
-    private async loadAnnotations() {
+    private loadAnnotations() {
         try {
-            const data = await fs.readFile(this.annotationFilePath, 'utf8');
+            const data = fsSync.readFileSync(this.annotationFilePath, 'utf8');
             this.annotations = this.deserializeAnnotations(JSON.parse(data));
             this.cleanupIgnoredAnnotations(this.annotations);
             this.annotationsExist = true;
@@ -241,12 +248,12 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
         }
     }
 
-    private async saveAnnotations() {
+    private saveAnnotations() {
         if (!this.annotationsExist) return;
         try {
             this.cleanupIgnoredAnnotations(this.annotations);
             const data = JSON.stringify(this.serializeAnnotations(this.annotations), null, 2);
-            await fs.writeFile(this.annotationFilePath, data);
+            fsSync.writeFileSync(this.annotationFilePath, data);
         } catch (error) {
             console.error('Error saving annotations:', error);
             vscode.window.showErrorMessage(`Failed to save annotations: ${error instanceof Error ? error.message : 'Unknown error'}`);
