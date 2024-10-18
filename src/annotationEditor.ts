@@ -115,6 +115,7 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             }
         }
 
+        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
         filesToOpen.add(element);
         this.currentElements.add(element);
         console.log("Files to open:");
@@ -123,19 +124,11 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
         for (const file of filesToOpen) {
             try {
                 const document = await vscode.workspace.openTextDocument(file);
-                await vscode.window.showTextDocument(document, { preview: false, preserveFocus: true });
-                console.log("Showing file reference: " + file);
+                await vscode.window.showTextDocument(document, { preview: false });
+                console.log("Opening file reference: " + file);
             } catch (error) {
                 console.error(`Error opening file: ${file}`, error);
             }
-        }
-
-        // Open the original document last and focus on it
-        try {
-            const originalDocument = await vscode.workspace.openTextDocument(element);
-            await vscode.window.showTextDocument(originalDocument, { preview: false });
-        } catch (error) {
-            console.error(`Error opening original file: ${element}`, error);
         }
     }
 

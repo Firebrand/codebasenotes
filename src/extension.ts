@@ -54,11 +54,12 @@ function registerCommands(
             }
         }),
         vscode.commands.registerCommand('projectTree.openFileAndEditAnnotation', async (element: string) => {
+            console.log(`Opening file for ${element}`);
             const document = await vscode.workspace.openTextDocument(element);
             await vscode.window.showTextDocument(document);
-            await annotationEditorProvider.editAnnotation(element);
         }),
         vscode.commands.registerCommand('projectTree.editFolderAnnotation', async (element: string) => {
+            console.log(`Editing folder annotation for ${element}`);
             await annotationEditorProvider.editAnnotation(element);
         }),
         vscode.commands.registerCommand('codebaseNotes.refreshTree', () => projectTreeProvider.refresh()),
@@ -83,7 +84,7 @@ function setupEventListeners(
         vscode.window.onDidChangeActiveTextEditor(async (editor) => {
             if (editor && editor.document.uri.scheme === 'file') {
                 if (isTreeViewVisible) {
-                    await revealAndLoadAnnotation(editor.document.uri, treeView, workspaceRoot, projectTreeProvider, annotationEditorProvider);
+                    revealAndLoadAnnotation(editor.document.uri, treeView, workspaceRoot, projectTreeProvider, annotationEditorProvider);
                 }
             }
         }),
@@ -115,7 +116,7 @@ function setupEventListeners(
         if (e.visible) {
             const activeEditor = vscode.window.activeTextEditor;
             if (activeEditor) {
-                await revealAndLoadAnnotation(activeEditor.document.uri, treeView, workspaceRoot, projectTreeProvider, annotationEditorProvider);
+                revealAndLoadAnnotation(activeEditor.document.uri, treeView, workspaceRoot, projectTreeProvider, annotationEditorProvider);
             }
         }
         isTreeViewVisible = e.visible;
@@ -160,7 +161,7 @@ async function expandDirectoryIfNeeded(dirPath: string, projectTreeProvider: Pro
 
 export function deactivate() {}
 
-async function revealAndLoadAnnotation(
+function revealAndLoadAnnotation(
     uri: vscode.Uri,
     treeView: vscode.TreeView<string>,
     workspaceRoot: string,
@@ -168,7 +169,8 @@ async function revealAndLoadAnnotation(
     annotationEditorProvider: AnnotationEditorProvider
 ) {
     if (uri && uri.scheme === 'file' && uri.fsPath.startsWith(workspaceRoot)) {
-        await revealFileInTree(uri, treeView, workspaceRoot, projectTreeProvider);
-        await annotationEditorProvider.editAnnotation(uri.fsPath);
+        console.log(`Revealing ${uri.fsPath} in tree view and loading annotation`);
+        revealFileInTree(uri, treeView, workspaceRoot, projectTreeProvider);
+        annotationEditorProvider.editAnnotation(uri.fsPath);
     }
 }
