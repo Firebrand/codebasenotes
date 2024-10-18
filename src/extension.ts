@@ -67,6 +67,9 @@ function registerCommands(
             const relativePath = path.relative(workspaceRoot, element);
             vscode.env.clipboard.writeText(`[${relativePath}]`);
             vscode.window.showInformationMessage(`Copied relative path: ${relativePath}`);
+        }),
+        vscode.commands.registerCommand('codebaseNotes.focus', () => {
+            vscode.commands.executeCommand('workbench.view.extension.codebaseNotes');
         })
     ];
 }

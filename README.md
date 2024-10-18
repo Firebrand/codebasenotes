@@ -23,10 +23,17 @@ A VS Code extension that allows you to add notes about your codebase's files AND
 
 ## Usage
 
+### Accessing CodebaseNotes
+
+- You can access CodebaseNotes by clicking on the "CodebaseNotes" icon in the Activity Bar.
+- Alternatively, use the keyboard shortcut:
+  - Windows/Linux: `Ctrl+Alt+C`
+  - macOS: `Cmd+Option+C`
+
 ### Viewing the Project Tree
 
 1. After installation, you'll see a new "CodebaseNotes" icon in the Activity Bar.
-2. Click on it to open the Project Tree view, which displays your project structure.
+2. Click on it or use the keyboard shortcut to open the Project Tree view, which displays your project structure.
 
 ### Adding/Editing Annotations
 

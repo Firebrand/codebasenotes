@@ -2,7 +2,7 @@
   "name": "codebasenotes",
   "displayName": "CodebaseNotes",
   "description": "Annotate your project's files & folders",
-  "version": "1.2.2",
+  "version": "1.2.4",
   "publisher": "AlexTsirozidis",
   "author": "Alex Tsirozidis <alex.tsirozidis@gmail.com>",
   "homepage": "https://github.com/Firebrand/codebasenotes#readme",
@@ -99,6 +99,17 @@
       {
         "command": "codebaseNotes.copyRelativePath",
         "title": "Copy Relative Path"
+      },
+      {
+        "command": "codebaseNotes.focus",
+        "title": "Focus CodebaseNotes"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "codebaseNotes.focus",
+        "key": "ctrl+alt+c",
+        "mac": "shift+cmd+c"
       }
     ],
     "menus": {
