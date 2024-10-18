@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import { GitignoreParser } from './gitignoreUtils';
 
@@ -25,6 +24,7 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
 
     private _onDidChangeAnnotation = new vscode.EventEmitter<string>();
     public readonly onDidChangeAnnotation = this._onDidChangeAnnotation.event;
+
 
     constructor(private readonly _extensionUri: vscode.Uri, private workspaceRoot: string) {
         this.annotationFilePath = path.join(workspaceRoot, '.codebasenotes-annotations.json');
@@ -111,10 +111,12 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
             const fullPath = path.join(this.workspaceRoot, relativePath);
 
             try {
-                const stat = fsSync.statSync(fullPath);
-                if (stat.isFile()) {
-                    filesToOpen.add(fullPath);
-                    this.currentElements.add(fullPath);
+                if (await this.fileExists(fullPath)) {
+                    const stat = fsSync.statSync(fullPath);
+                    if (stat.isFile()) {
+                        filesToOpen.add(fullPath);
+                        this.currentElements.add(fullPath);
+                    }
                 }
             } catch (error) {
                 console.error(`Error processing file: ${relativePath}`, error);
@@ -330,5 +332,28 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
 
     dispose() {
         this.fileSystemWatcher.dispose();
+    }
+
+    public async createAnnotationFileIfNotExists(): Promise<void> {
+        try {
+            await vscode.workspace.fs.stat(vscode.Uri.file(this.annotationFilePath));
+        } catch {
+            console.log("Creating annotation file");
+            // File doesn't exist, create it
+            const initialContent = JSON.stringify({ type: 'dir', subNodes: {} }, null, 2);
+            await vscode.workspace.fs.writeFile(vscode.Uri.file(this.annotationFilePath), Buffer.from(initialContent, 'utf8'));
+            this.annotationsExist = true;
+            this.annotations = { type: 'dir', subNodes: new Map() };
+            this._onDidChangeAnnotation.fire('');
+        }
+    }
+
+    private async fileExists(filePath: string): Promise<boolean> {
+        try {
+            await vscode.workspace.fs.stat(vscode.Uri.file(filePath));
+            return true;
+        } catch {
+            return false;
+        }
     }
 }

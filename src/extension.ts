@@ -23,10 +23,14 @@ export function activate(context: vscode.ExtensionContext) {
         showCollapseAll: true 
     });
 
-    
     // Listen for when the view becomes visible
-    treeView.onDidChangeVisibility(e => {
+    treeView.onDidChangeVisibility(async e => {
         isTreeViewVisible = e.visible;
+        if (isTreeViewVisible) {
+            console.log("Creating annotation file if it doesn't exist");
+            await annotationEditorProvider.createAnnotationFileIfNotExists();
+            projectTreeProvider.refresh();
+        }
     });
 
     context.subscriptions.push(
@@ -169,7 +173,6 @@ function revealAndLoadAnnotation(
     annotationEditorProvider: AnnotationEditorProvider
 ) {
     if (uri && uri.scheme === 'file' && uri.fsPath.startsWith(workspaceRoot)) {
-        console.log(`Revealing ${uri.fsPath} in tree view and loading annotation`);
         revealFileInTree(uri, treeView, workspaceRoot, projectTreeProvider);
         annotationEditorProvider.editAnnotation(uri.fsPath);
     }
