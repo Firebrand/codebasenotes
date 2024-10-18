@@ -39,8 +39,6 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<string> {
         
         if (this.gitignoreParser.isIgnored(relativePath)) return;
 
-        console.log(`File ${changeType} detected: ${uri.fsPath}`);
-
         if (changeType === 'delete') {
             this.annotationEditorProvider.removeAnnotation(uri.fsPath);
         }
@@ -54,7 +52,6 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<string> {
             const newPath = path.relative(this.workspaceRoot, newUri.fsPath);
 
             if (!this.gitignoreParser.isIgnored(oldPath) && !this.gitignoreParser.isIgnored(newPath)) {
-                console.log(`File renamed from ${oldUri.fsPath} to ${newUri.fsPath}`);
                 this.annotationEditorProvider.moveAnnotation(oldUri.fsPath, newUri.fsPath);
             }
         }

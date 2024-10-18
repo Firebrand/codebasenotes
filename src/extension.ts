@@ -7,7 +7,6 @@ import { AnnotationEditorProvider } from './annotationEditor';
 let isTreeViewVisible: boolean = false;
 
 export function activate(context: vscode.ExtensionContext) {
-    console.log('Activating CodebaseNotes extension');
 
     const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
     if (!workspaceRoot) {
@@ -27,7 +26,6 @@ export function activate(context: vscode.ExtensionContext) {
     treeView.onDidChangeVisibility(async e => {
         isTreeViewVisible = e.visible;
         if (isTreeViewVisible) {
-            console.log("Creating annotation file if it doesn't exist");
             await annotationEditorProvider.createAnnotationFileIfNotExists();
             projectTreeProvider.refresh();
         }
@@ -58,12 +56,10 @@ function registerCommands(
             }
         }),
         vscode.commands.registerCommand('projectTree.openFileAndEditAnnotation', async (element: string) => {
-            console.log(`Opening file for ${element}`);
             const document = await vscode.workspace.openTextDocument(element);
             await vscode.window.showTextDocument(document);
         }),
         vscode.commands.registerCommand('projectTree.editFolderAnnotation', async (element: string) => {
-            console.log(`Editing folder annotation for ${element}`);
             await annotationEditorProvider.editAnnotation(element);
         }),
         vscode.commands.registerCommand('codebaseNotes.refreshTree', () => projectTreeProvider.refresh()),

@@ -338,7 +338,6 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
         try {
             await vscode.workspace.fs.stat(vscode.Uri.file(this.annotationFilePath));
         } catch {
-            console.log("Creating annotation file");
             // File doesn't exist, create it
             const initialContent = JSON.stringify({ type: 'dir', subNodes: {} }, null, 2);
             await vscode.workspace.fs.writeFile(vscode.Uri.file(this.annotationFilePath), Buffer.from(initialContent, 'utf8'));
