@@ -18,8 +18,8 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
     private gitignoreParser: GitignoreParser;
     private fileSystemWatcher: vscode.FileSystemWatcher;
     private annotationsExist: boolean = true;
-    private openedAnnotations: Set<string> = new Set();
-    private lastOpenedTimestamp: number = 0;
+    private currentElements: Set<string> = new Set();
+    private lastEditAnnotationTime: number = 0;
 
     private _onDidChangeAnnotation = new vscode.EventEmitter<string>();
     public readonly onDidChangeAnnotation = this._onDidChangeAnnotation.event;
@@ -63,70 +63,73 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
     }
 
     public async editAnnotation(element: string) {
+
         const relativePath = path.relative(this.workspaceRoot, element);
         if (this.gitignoreParser.isIgnored(relativePath)) {
             vscode.window.showInformationMessage('This file/folder is ignored by .gitignore and cannot be edited.');
             return;
         }
 
-        const currentTime = Date.now();
-        if (currentTime - this.lastOpenedTimestamp > 5000) {
-            this.openedAnnotations.clear();
-        }
-
         if (this._view) {
             this.currentEditingItem = element;
-            this._view.show?.(true);
-            this._view.webview.postMessage({ 
+            await this._view.show?.(true);
+            await this._view.webview.postMessage({ 
                 type: 'setAnnotation', 
                 itemName: path.basename(element),
                 annotation: this.getAnnotation(element)
             });
+            console.log("Showing annotation for " + element);
 
-            if (!this.openedAnnotations.has(element)) {
+            // Then open referenced files if the element is not in currentElements
+            if (!this.currentElements.has(element)) {
+                console.log("Opening referenced files for " + element);
                 await this.openReferencedFiles(element);
-                await vscode.workspace.openTextDocument(element).then(doc => 
-                    vscode.window.showTextDocument(doc, { preview: false })
-                );
-                this.openedAnnotations.add(element);
-                this.lastOpenedTimestamp = currentTime;
+                // this.currentElements.clear();
             }
         } else {
-            vscode.window.showErrorMessage('Unable to open annotation editor. Please try again.');
+            await vscode.window.showErrorMessage('Unable to open annotation editor. Please try again.');
         }
     }
+    
 
     private async openReferencedFiles(element: string) {
         const annotation = this.getAnnotation(element);
         const regex = /\s*\[\s*([^\]]+)\s*\]\s*/g;
         let match;
-        const filesToOpen = [];
+        const filesToOpen = new Set<string>();
 
         while ((match = regex.exec(annotation)) !== null) {
             const relativePath = match[1].trim().replace(/\\/g, '/');
             const fullPath = path.join(this.workspaceRoot, relativePath);
 
-            if (fullPath === element) continue;
-
             try {
                 const stat = await fs.stat(fullPath);
                 if (stat.isFile()) {
-                    filesToOpen.push(fullPath);
+                    filesToOpen.add(fullPath);
+                    this.currentElements.add(fullPath);
                 }
             } catch (error) {
                 console.error(`Error processing file: ${relativePath}`, error);
             }
+
+            
         }
 
-        // Open referenced files
+        // Add the original file to filesToOpen
+        await filesToOpen.add(element);
+        await this.currentElements.add(element);
+        const originalDocument = await vscode.workspace.openTextDocument(element);
+        await vscode.window.showTextDocument(originalDocument, { preview: false });
+        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+        console.log("Files to open:");
+        console.log(filesToOpen);
+
+        // Open referenced files if they're not already open
         for (const file of filesToOpen) {
             const document = await vscode.workspace.openTextDocument(file);
             await vscode.window.showTextDocument(document, { preview: false, preserveFocus: true });
+            console.log("Showing file reference: " + file);
         }
-
-        // Open the original document last
-        const originalDocument = await vscode.workspace.openTextDocument(element);
-        await vscode.window.showTextDocument(originalDocument, { preview: false });
     }
 
     private async updateAnnotation(annotation: string) {
