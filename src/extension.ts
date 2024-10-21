@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs/promises';
 import { ProjectTreeProvider } from './projectTreeProvider';
 import { AnnotationEditorProvider } from './annotationEditor';
+import { AnnotationListProvider } from './annotationListProvider';
 
 let isTreeViewVisible: boolean = false;
 
@@ -38,6 +39,11 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     setupEventListeners(context, projectTreeProvider, treeView, workspaceRoot, annotationEditorProvider);
+
+    const annotationListProvider = new AnnotationListProvider(context.extensionUri, workspaceRoot);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(AnnotationListProvider.viewType, annotationListProvider)
+    );
 }
 
 function registerCommands(
@@ -70,6 +76,10 @@ function registerCommands(
         }),
         vscode.commands.registerCommand('codebaseNotes.focus', () => {
             vscode.commands.executeCommand('workbench.view.extension.codebaseNotes');
+        }),
+        vscode.commands.registerCommand('codebaseNotes.revealItem', (itemPath: string) => {
+            const fullPath = path.join(workspaceRoot, itemPath);
+            projectTreeProvider.reveal(fullPath);
         })
     ];
 }
@@ -164,6 +174,8 @@ async function expandDirectoryIfNeeded(dirPath: string, projectTreeProvider: Pro
 
 export function deactivate() {}
 
+
+
 function revealAndLoadAnnotation(
     uri: vscode.Uri,
     treeView: vscode.TreeView<string>,
@@ -176,3 +188,4 @@ function revealAndLoadAnnotation(
         annotationEditorProvider.editAnnotation(uri.fsPath);
     }
 }
+

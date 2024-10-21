@@ -80,6 +80,11 @@
           "id": "annotationEditor",
           "name": "Annotation Editor",
           "type": "webview"
+        },
+        {
+          "id": "annotationList",
+          "name": "All Annotations",
+          "type": "webview"
         }
       ]
     },

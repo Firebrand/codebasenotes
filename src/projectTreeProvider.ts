@@ -160,4 +160,13 @@ export class ProjectTreeProvider implements vscode.TreeDataProvider<string> {
     dispose() {
         this.fileSystemWatcher.dispose();
     }
+
+    async reveal(itemPath: string): Promise<void> {
+        const element = itemPath;
+        const item = await this.getTreeItem(element);
+        if (item) {
+            vscode.commands.executeCommand('projectTree.focus');
+            vscode.commands.executeCommand('revealInExplorer', vscode.Uri.file(element));
+        }
+    }
 }
