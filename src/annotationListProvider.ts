@@ -64,7 +64,6 @@ export class AnnotationListProvider implements vscode.WebviewViewProvider {
             <title>Annotation List</title>
         </head>
         <body>
-            <h2>All Annotations</h2>
             <ul id="annotationList"></ul>
             <script>
                 var annotations = ${annotations};

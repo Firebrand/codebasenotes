@@ -6,7 +6,7 @@
         annotationList.innerHTML = '';
         annotations.forEach(item => {
             const li = document.createElement('li');
-            li.innerHTML = `<strong>${item.path}</strong>: ${item.annotation}`;
+            li.innerHTML = `${item.annotation}`;
             li.addEventListener('click', () => {
                 vscode.postMessage({ type: 'revealItem', path: item.path });
             });

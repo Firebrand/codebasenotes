@@ -79,7 +79,10 @@ function registerCommands(
         }),
         vscode.commands.registerCommand('codebaseNotes.revealItem', (itemPath: string) => {
             const fullPath = path.join(workspaceRoot, itemPath);
-            projectTreeProvider.reveal(fullPath);
+            // projectTreeProvider.reveal(fullPath);
+            if (isTreeViewVisible) {
+                revealAndLoadAnnotation(vscode.Uri.file(fullPath), treeView, workspaceRoot, projectTreeProvider, annotationEditorProvider);
+            }
         })
     ];
 }
