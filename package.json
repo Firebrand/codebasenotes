@@ -83,7 +83,7 @@
         },
         {
           "id": "annotationList",
-          "name": "All Annotations",
+          "name": "Annotation List",
           "type": "webview"
         }
       ]
