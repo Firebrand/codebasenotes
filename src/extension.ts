@@ -35,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         treeView,
         vscode.window.registerWebviewViewProvider(AnnotationEditorProvider.viewType, annotationEditorProvider),
-        ...registerCommands(projectTreeProvider, annotationEditorProvider, treeView, workspaceRoot)
+        ...registerCommands(projectTreeProvider, annotationEditorProvider, workspaceRoot)
     );
 
     setupEventListeners(context, projectTreeProvider, treeView, workspaceRoot, annotationEditorProvider);
@@ -48,16 +48,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 function registerCommands(
     projectTreeProvider: ProjectTreeProvider, 
-    annotationEditorProvider: AnnotationEditorProvider, 
-    treeView: vscode.TreeView<string>,
+    annotationEditorProvider: AnnotationEditorProvider,
     workspaceRoot: string
 ): vscode.Disposable[] {
     return [
         vscode.commands.registerCommand('codebaseNotes.clearAndOpenItem', async (element: string, isDirectory: boolean) => {
-            await vscode.commands.executeCommand('workbench.action.closeAllEditors');
             if (isDirectory) {
                 await vscode.commands.executeCommand('projectTree.editFolderAnnotation', element);
             } else {
+                await vscode.commands.executeCommand('workbench.action.closeAllEditors');
                 await vscode.commands.executeCommand('projectTree.openFileAndEditAnnotation', element);
             }
         }),
@@ -76,13 +75,6 @@ function registerCommands(
         }),
         vscode.commands.registerCommand('codebaseNotes.focus', () => {
             vscode.commands.executeCommand('workbench.view.extension.codebaseNotes');
-        }),
-        vscode.commands.registerCommand('codebaseNotes.revealItem', (itemPath: string) => {
-            const fullPath = path.join(workspaceRoot, itemPath);
-            // projectTreeProvider.reveal(fullPath);
-            if (isTreeViewVisible) {
-                revealAndLoadAnnotation(vscode.Uri.file(fullPath), treeView, workspaceRoot, projectTreeProvider, annotationEditorProvider);
-            }
         })
     ];
 }

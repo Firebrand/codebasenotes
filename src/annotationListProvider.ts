@@ -6,9 +6,11 @@ export class AnnotationListProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'annotationList';
     private _view?: vscode.WebviewView;
     private annotationFilePath: string;
+    private workspaceRoot: string;
 
-    constructor(private readonly _extensionUri: vscode.Uri, private workspaceRoot: string) {
-        this.annotationFilePath = path.join(workspaceRoot, '.codebasenotes-annotations.json');
+    constructor(private readonly _extensionUri: vscode.Uri, private workspaceRootParam: string) {
+        this.workspaceRoot = workspaceRootParam;
+        this.annotationFilePath = path.join(this.workspaceRoot, '.codebasenotes-annotations.json');
     }
 
     public resolveWebviewView(
@@ -74,9 +76,18 @@ export class AnnotationListProvider implements vscode.WebviewViewProvider {
     }
 
     private setupWebviewMessageListener(webviewView: vscode.WebviewView) {
-        webviewView.webview.onDidReceiveMessage(data => {
+        webviewView.webview.onDidReceiveMessage(async data => {
             if (data.type === 'revealItem') {
-                vscode.commands.executeCommand('codebaseNotes.revealItem', data.path);
+                const fullPath = path.join(this.workspaceRoot, data.path);
+                try {
+                    const stats = await fs.stat(fullPath);
+                    const isDirectory = stats.isDirectory();
+                    vscode.commands.executeCommand('codebaseNotes.clearAndOpenItem', fullPath, isDirectory);
+                } catch (error) {
+                    console.error('Error checking if path is directory:', error);
+                    // Fallback to assuming it's not a directory if there's an error
+                    vscode.commands.executeCommand('codebaseNotes.clearAndOpenItem', fullPath, false);
+                }
             }
         });
     }
