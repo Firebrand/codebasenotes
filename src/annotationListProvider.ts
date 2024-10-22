@@ -5,12 +5,16 @@ import * as fs from 'fs/promises';
 export class AnnotationListProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = 'annotationList';
     private _view?: vscode.WebviewView;
+    private fileSystemWatcher: vscode.FileSystemWatcher;
     private annotationFilePath: string;
     private workspaceRoot: string;
+    private debounceTimer: NodeJS.Timeout | null = null;
+    private lastRefreshTime: number = 0;
 
     constructor(private readonly _extensionUri: vscode.Uri, private workspaceRootParam: string) {
         this.workspaceRoot = workspaceRootParam;
         this.annotationFilePath = path.join(this.workspaceRoot, '.codebasenotes-annotations.json');
+        this.fileSystemWatcher = this.createFileSystemWatcher();
     }
 
     public resolveWebviewView(
@@ -90,5 +94,47 @@ export class AnnotationListProvider implements vscode.WebviewViewProvider {
                 }
             }
         });
+    }
+
+    private createFileSystemWatcher(): vscode.FileSystemWatcher {
+        const watcher = vscode.workspace.createFileSystemWatcher(
+            new vscode.RelativePattern(this.workspaceRoot, '.codebasenotes-annotations.json')
+        );
+        watcher.onDidChange(() => this.refresh());
+        watcher.onDidCreate(() => this.refresh());
+        watcher.onDidDelete(() => this.refresh());
+        return watcher;
+    }
+
+    private refresh(): void {
+        const currentTime = Date.now();
+        if (currentTime - this.lastRefreshTime < 5000) {
+            if (this.debounceTimer) {
+                clearTimeout(this.debounceTimer);
+            }
+            this.debounceTimer = setTimeout(() => {
+                this.performRefresh();
+            }, 5000);
+        } else {
+            this.performRefresh();
+        }
+    }
+
+    private performRefresh(): void {
+        if (this._view) {
+            this.loadAnnotations().then(annotations => {
+                if (this._view) {
+                    this._view.webview.html = this._getHtmlForWebview(this._view.webview, annotations);
+                }
+            });
+        }
+        this.lastRefreshTime = Date.now();
+    }
+
+    public dispose() {
+        this.fileSystemWatcher.dispose();
+        if (this.debounceTimer) {
+            clearTimeout(this.debounceTimer);
+        }
     }
 }

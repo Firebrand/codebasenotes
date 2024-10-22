@@ -2,7 +2,7 @@
     const vscode = acquireVsCodeApi();
     const annotationList = document.getElementById('annotationList');
 
-    function renderAnnotations() {
+    function renderAnnotations(annotations) {
         annotationList.innerHTML = '';
         annotations.forEach(item => {
             const li = document.createElement('li');
@@ -14,5 +14,15 @@
         });
     }
 
-    renderAnnotations();
+    renderAnnotations(annotations);
+
+    window.addEventListener('message', event => {
+        const message = event.data;
+        console.log('Halako', message);
+        switch (message.type) {
+            case 'refreshAnnotations':
+                renderAnnotations(message.annotations);
+                break;
+        }
+    });
 })();

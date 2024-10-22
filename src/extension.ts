@@ -6,6 +6,7 @@ import { AnnotationEditorProvider } from './annotationEditor';
 import { AnnotationListProvider } from './annotationListProvider';
 
 let isTreeViewVisible: boolean = false;
+let annotationListProvider: AnnotationListProvider;
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -40,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     setupEventListeners(context, projectTreeProvider, treeView, workspaceRoot, annotationEditorProvider);
 
-    const annotationListProvider = new AnnotationListProvider(context.extensionUri, workspaceRoot);
+    annotationListProvider = new AnnotationListProvider(context.extensionUri, workspaceRoot);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(AnnotationListProvider.viewType, annotationListProvider)
     );
@@ -169,9 +170,10 @@ async function expandDirectoryIfNeeded(dirPath: string, projectTreeProvider: Pro
     }
 }
 
-export function deactivate() {}
-
-
+export function deactivate() {
+    // Dispose of other resources if needed
+    annotationListProvider.dispose();
+}
 
 function revealAndLoadAnnotation(
     uri: vscode.Uri,
@@ -185,5 +187,3 @@ function revealAndLoadAnnotation(
         annotationEditorProvider.editAnnotation(uri.fsPath);
     }
 }
-
-
