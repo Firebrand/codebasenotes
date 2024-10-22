@@ -1,8 +1,8 @@
 # CodebaseNotes
 
-A VS Code extension that allows you to add notes about your codebase's files AND folders directly on a project tree in the VS Code UI. The goal is to help developers and teams maintain clear documentation about the structure and purpose of different parts of their codebase. Also serves as a great tool for onboarding or just personal learning. All notes are stored into a single json file that can be checked into a repo.
+A VS Code extension that allows you to annotate your codebase's files AND folders directly on a project tree in the VS Code UI. The goal is to help developers and teams maintain clear documentation about the structure and purpose of different parts of their codebase. Also serves as a great tool for onboarding or just personal learning. All notes are stored into a single json file that can be checked into a repo.
 
-![CodebaseNotes Demo](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/demo4.gif)
+![CodebaseNotes Demo](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/demo5.gif)
 
 ## Features
 
@@ -12,7 +12,8 @@ A VS Code extension that allows you to add notes about your codebase's files AND
 - **Smart File Bundling**: Reference related files in your annotations to open them simultaneously.
 - **Gitignore Integration**: Automatically respects your project's `.gitignore` file to exclude irrelevant files and folders.
 - **Real-time Updates**: The project tree updates in real-time as you make changes to your files or annotations.
-- **Reveal in CodebaseNotes**: Quickly locate and reveal files in the CodebaseNotes tree view.
+- **Annotation List Viewer**: A separate view that displays all annotations in a list format.
+- **Ordered Annotations**: Add numbers to the front of your annotations to create a custom order, perfect for creating guides or walkthroughs.
 
 ## Installation
 
@@ -41,27 +42,13 @@ A VS Code extension that allows you to add notes about your codebase's files AND
 2. The Annotation Editor will open in the sidebar, allowing you to add or edit the annotation.
 3. Type your annotation in the text area. It will auto-save as you type.
 4. To reference other files, enclose their relative paths in square brackets (e.g., `[src/app/index.js]`). Clicking on the annotated file will also open these referenced files.
+5. To create ordered annotations, add numbers to the front of your annotations (e.g., "1 - Introduction", "2 - Setup"). These will be displayed in order in the Annotation List view.
 
 ### Opening Files
 
 - Clicking on a file in the Project Tree will open it in the editor and allow you to edit its annotation.
 - When you click on a file/folder in the Project Tree, any previously open files in the Editor will close. This is by design to keep your workspace focused.
-
-### Commands
-
-CodebaseNotes adds the following commands to VS Code:
-
-- `CodebaseNotes: Open File and Edit Annotation`: Opens a file and allows you to edit its annotation.
-- `CodebaseNotes: Edit Folder Annotation`: Allows you to edit a folder's annotation.
-- `CodebaseNotes: Refresh Project Tree`: Manually refreshes the project tree view.
-- `CodebaseNotes: Copy Relative Path`: Copies the relative path of a file or folder, formatted for use in annotations.
-- `CodebaseNotes: Reveal in CodebaseNotes`: Reveals the current file in the CodebaseNotes tree view.
-
-## Configuration
-
-You can configure CodebaseNotes through VS Code's settings:
-
-- `codebaseNotes.autoSave`: Enable/disable auto-saving of annotations (default: true)
+- Clicking on an item in the Annotation List will open the corresponding file or folder.
 
 ## File Storage
 
