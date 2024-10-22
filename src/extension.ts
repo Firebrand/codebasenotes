@@ -35,7 +35,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         treeView,
         vscode.window.registerWebviewViewProvider(AnnotationEditorProvider.viewType, annotationEditorProvider),
-        ...registerCommands(projectTreeProvider, annotationEditorProvider, workspaceRoot)
+        ...registerCommands(projectTreeProvider, annotationEditorProvider, workspaceRoot, treeView)
     );
 
     setupEventListeners(context, projectTreeProvider, treeView, workspaceRoot, annotationEditorProvider);
@@ -49,7 +49,8 @@ export function activate(context: vscode.ExtensionContext) {
 function registerCommands(
     projectTreeProvider: ProjectTreeProvider, 
     annotationEditorProvider: AnnotationEditorProvider,
-    workspaceRoot: string
+    workspaceRoot: string,
+    treeView: vscode.TreeView<string>
 ): vscode.Disposable[] {
     return [
         vscode.commands.registerCommand('codebaseNotes.clearAndOpenItem', async (element: string, isDirectory: boolean) => {
@@ -59,6 +60,7 @@ function registerCommands(
                 await vscode.commands.executeCommand('workbench.action.closeAllEditors');
                 await vscode.commands.executeCommand('projectTree.openFileAndEditAnnotation', element);
             }
+            await revealFileInTree(vscode.Uri.file(element), treeView, workspaceRoot, projectTreeProvider);
         }),
         vscode.commands.registerCommand('projectTree.openFileAndEditAnnotation', async (element: string) => {
             const document = await vscode.workspace.openTextDocument(element);
@@ -183,4 +185,5 @@ function revealAndLoadAnnotation(
         annotationEditorProvider.editAnnotation(uri.fsPath);
     }
 }
+
 
