@@ -142,31 +142,29 @@ async function revealFileInTree(
 ) {
     try {
         if (uri && uri.scheme === 'file' && uri.fsPath.startsWith(workspaceRoot) && isTreeViewVisible) {
-            const relativePath = path.relative(workspaceRoot, uri.fsPath);
-            const pathParts = relativePath.split(path.sep);
-            
-            // Expand the tree to show the file
-            for (let i = 0; i < pathParts.length - 1; i++) {
-                const partialPath = path.join(workspaceRoot, ...pathParts.slice(0, i + 1));
-                await expandDirectoryIfNeeded(partialPath, projectTreeProvider);
+            const stats = await vscode.workspace.fs.stat(uri);
+            const isDirectory = stats.type === vscode.FileType.Directory;
+
+            if (isDirectory) {
+                // For directories, just reveal without expanding
+                await treeView.reveal(uri.fsPath, { select: true, focus: false });
+            } else {
+                // For files, expand parent directories and reveal
+                const relativePath = path.relative(workspaceRoot, uri.fsPath);
+                const pathParts = relativePath.split(path.sep);
+                
+                // Expand only the parent directories
+                for (let i = 0; i < pathParts.length - 1; i++) {
+                    const partialPath = path.join(workspaceRoot, ...pathParts.slice(0, i + 1));
+                    await projectTreeProvider.getChildren(partialPath);
+                }
+
+                // Reveal the file
+                await treeView.reveal(uri.fsPath, { select: true, focus: false, expand: 1 });
             }
-
-            // Reveal the file
-            await treeView.reveal(uri.fsPath, { select: true, focus: false, expand: 3 });
         }
     } catch (error) {
-        console.error('Error revealing file:', error);
-    }
-}
-
-async function expandDirectoryIfNeeded(dirPath: string, projectTreeProvider: ProjectTreeProvider) {
-    try {
-        const stats = await fs.stat(dirPath);
-        if (stats.isDirectory()) {
-            await projectTreeProvider.getChildren(dirPath);
-        }
-    } catch (error) {
-        console.error(`Error processing path ${dirPath}:`, error);
+        console.error('Error revealing item:', error);
     }
 }
 

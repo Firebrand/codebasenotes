@@ -4,24 +4,6 @@ A VS Code extension that allows you to annotate your codebase's files AND folder
 
 ![CodebaseNotes Demo](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/demo5.gif)
 
-## Features
-
-- **Project Tree View**: A custom sidebar view that displays your project structure, respecting `.gitignore` rules.
-- **File and Folder Annotations**: Add notes to both files and folders directly in VS Code.
-- **Annotation Editor**: A dedicated webview for editing annotations with auto-save functionality.
-- **Smart File Bundling**: Reference related files in your annotations to open them simultaneously.
-- **Gitignore Integration**: Automatically respects your project's `.gitignore` file to exclude irrelevant files and folders.
-- **Real-time Updates**: The project tree updates in real-time as you make changes to your files or annotations.
-- **Annotation List Viewer**: A separate view that displays all annotations in a list format.
-- **Ordered Annotations**: Add numbers to the front of your annotations to create a custom order, perfect for creating guides or walkthroughs.
-
-## Installation
-
-1. Open Visual Studio Code
-2. Navigate to the Extensions view (Ctrl+Shift+X or Cmd+Shift+X on macOS)
-3. Search for "CodebaseNotes"
-4. Click Install
-
 ## Usage
 
 ### Accessing CodebaseNotes
@@ -31,42 +13,25 @@ A VS Code extension that allows you to annotate your codebase's files AND folder
   - Windows/Linux: `Ctrl+Alt+C`
   - macOS: `Cmd+Option+C`
 
-### Viewing the Project Tree
+### Click on a file or folder and enter an annotation for it (it's autosaved)
 
-1. After installation, you'll see a new "CodebaseNotes" icon in the Activity Bar.
-2. Click on it or use the keyboard shortcut to open the Project Tree view, which displays your project structure.
+![Tutorial 1](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/1.png)
 
-### Adding/Editing Annotations
+### Put a number in front of your annotation to have it ordered by that in the annotation list
 
-1. In the Project Tree view, click on a file or folder.
-2. The Annotation Editor will open in the sidebar, allowing you to add or edit the annotation.
-3. Type your annotation in the text area. It will auto-save as you type.
-4. To reference other files, enclose their relative paths in square brackets (e.g., `[src/app/index.js]`). Clicking on the annotated file will also open these referenced files.
-5. To create ordered annotations, add numbers to the front of your annotations (e.g., "1 - Introduction", "2 - Setup"). These will be displayed in order in the Annotation List view.
+![Tutorial 2](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/2.png)
 
-### Opening Files
+### Right-click on a file, choose "Copy Relative Path" and paste that into an annotation. Whenever this annotation is opened, it will also open the referenced file.
 
-- Clicking on a file in the Project Tree will open it in the editor and allow you to edit its annotation.
-- When you click on a file/folder in the Project Tree, any previously open files in the Editor will close. This is by design to keep your workspace focused.
-- Clicking on an item in the Annotation List will open the corresponding file or folder.
+![Tutorial 3](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/3.png)
 
-## File Storage
+### Your annotations are stored in a `.codebasenotes-annotations.json` file in your project's root directory. This file can be checked into a repo to share annotations with your team.
 
-Annotations are stored in a `.codebasenotes-annotations.json` file in your project's root directory. This file can be committed to version control to share annotations with your team.
+![Tutorial 4](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/4.png)
 
 ## Requirements
 
 - Visual Studio Code version 1.74.0 or higher
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## License
 
