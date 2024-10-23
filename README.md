@@ -4,28 +4,28 @@ A VS Code extension that allows you to annotate your codebase's files AND folder
 
 ![CodebaseNotes Demo](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/demo5.gif)
 
-## Usage
+## Features
 
-### 1. Accessing CodebaseNotes
+### Accessing CodebaseNotes
 
 - You can access CodebaseNotes by clicking on the "CodebaseNotes" icon in the Activity Bar.
 - Alternatively, use the keyboard shortcut:
   - Windows/Linux: `Ctrl+Alt+C`
   - macOS: `Cmd+Option+C`
 
-### 2. Click on a file or folder and enter an annotation for it (it's autosaved)
+### Click on a file or folder and enter an annotation for it (it's autosaved)
 
 ![Tutorial 1](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/1a.png)
 
-### 3. Put a number in front of your annotation to have it ordered by that in the annotation list
+### You may put a number in front of your annotation to have it ordered by that in the Annotation List
 
 ![Tutorial 2](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/2a.png)
 
-### 4. Right-click on a file, choose "Copy Relative Path" and paste that into an annotation. Whenever this annotation is opened, it will also open the referenced file.
+### If you right-click on a file, choose "Copy Relative Path" and paste that into an annotation, whenever this annotation is opened, it will also open the referenced file.
 
 ![Tutorial 3](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/3a.png)
 
-### 5. Your annotations are stored in a `.codebasenotes-annotations.json` file in your project's root directory. This file can be checked into a repo to share annotations with your team.
+### Your annotations are stored in a `.codebasenotes-annotations.json` file in your project's root directory. This file can be checked into a repo to share annotations with your team.
 
 ![Tutorial 4](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/4a.png)
 
