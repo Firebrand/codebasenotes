@@ -1,33 +1,33 @@
 # CodebaseNotes
 
-A VS Code extension that allows you to annotate your codebase's files AND folders directly on a project tree in the VS Code UI. The goal is to help developers and teams maintain clear documentation about the structure and purpose of different parts of their codebase. Also serves as a great tool for onboarding or just personal learning. All notes are stored into a single json file that can be checked into a repo.
+A VS Code extension that allows you to annotate your codebase's files AND folders directly on a project tree in the VS Code UI. Maintain clear documentation about the structure and purpose of the different parts of your codebase. Also serves as a great tool for onboarding or just personal learning. All notes are stored into a single json file that can be checked into a repo.
 
 ![CodebaseNotes Demo](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/demo5.gif)
 
 ## Usage
 
-### Accessing CodebaseNotes
+### 1. Accessing CodebaseNotes
 
 - You can access CodebaseNotes by clicking on the "CodebaseNotes" icon in the Activity Bar.
 - Alternatively, use the keyboard shortcut:
   - Windows/Linux: `Ctrl+Alt+C`
   - macOS: `Cmd+Option+C`
 
-### Click on a file or folder and enter an annotation for it (it's autosaved)
+### 2. Click on a file or folder and enter an annotation for it (it's autosaved)
 
-![Tutorial 1](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/1.png)
+![Tutorial 1](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/1a.png)
 
-### Put a number in front of your annotation to have it ordered by that in the annotation list
+### 3. Put a number in front of your annotation to have it ordered by that in the annotation list
 
-![Tutorial 2](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/2.png)
+![Tutorial 2](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/2a.png)
 
-### Right-click on a file, choose "Copy Relative Path" and paste that into an annotation. Whenever this annotation is opened, it will also open the referenced file.
+### 4. Right-click on a file, choose "Copy Relative Path" and paste that into an annotation. Whenever this annotation is opened, it will also open the referenced file.
 
-![Tutorial 3](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/3.png)
+![Tutorial 3](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/3a.png)
 
-### Your annotations are stored in a `.codebasenotes-annotations.json` file in your project's root directory. This file can be checked into a repo to share annotations with your team.
+### 5. Your annotations are stored in a `.codebasenotes-annotations.json` file in your project's root directory. This file can be checked into a repo to share annotations with your team.
 
-![Tutorial 4](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/4.png)
+![Tutorial 4](https://raw.githubusercontent.com/Firebrand/codebasenotes/main/resources/4a.png)
 
 ## Requirements
 
