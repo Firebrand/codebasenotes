@@ -133,6 +133,16 @@
           "type": "boolean",
           "default": true,
           "annotation": "Automatically save annotations when edited"
+        },
+        "codebaseNotes.path": {
+          "type": "string",
+          "default": ".vscode",
+          "description": "Where to save the notes, relative to the workspace root."
+        },
+        "codebaseNotes.filename": {
+          "type": "string",
+          "default": ".codebasenotes-annotations.json",
+          "description": "The name of the `*.json` file with the annotations."
         }
       }
     }

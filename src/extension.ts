@@ -19,9 +19,9 @@ export function activate(context: vscode.ExtensionContext) {
     const annotationEditorProvider = new AnnotationEditorProvider(context.extensionUri, workspaceRoot);
     const projectTreeProvider = new ProjectTreeProvider(workspaceRoot, annotationEditorProvider);
 
-    const treeView = vscode.window.createTreeView('projectTree', { 
-        treeDataProvider: projectTreeProvider, 
-        showCollapseAll: true 
+    const treeView = vscode.window.createTreeView('projectTree', {
+        treeDataProvider: projectTreeProvider,
+        showCollapseAll: true
     });
 
     // Listen for when the view becomes visible
@@ -48,7 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 function registerCommands(
-    projectTreeProvider: ProjectTreeProvider, 
+    projectTreeProvider: ProjectTreeProvider,
     annotationEditorProvider: AnnotationEditorProvider,
     workspaceRoot: string,
     treeView: vscode.TreeView<string>
@@ -83,8 +83,8 @@ function registerCommands(
 }
 
 function setupEventListeners(
-    context: vscode.ExtensionContext, 
-    projectTreeProvider: ProjectTreeProvider, 
+    context: vscode.ExtensionContext,
+    projectTreeProvider: ProjectTreeProvider,
     treeView: vscode.TreeView<string>,
     workspaceRoot: string,
     annotationEditorProvider: AnnotationEditorProvider
@@ -135,8 +135,8 @@ function setupEventListeners(
 }
 
 async function revealFileInTree(
-    uri: vscode.Uri, 
-    treeView: vscode.TreeView<string>, 
+    uri: vscode.Uri,
+    treeView: vscode.TreeView<string>,
     workspaceRoot: string,
     projectTreeProvider: ProjectTreeProvider
 ) {
@@ -152,7 +152,7 @@ async function revealFileInTree(
                 // For files, expand parent directories and reveal
                 const relativePath = path.relative(workspaceRoot, uri.fsPath);
                 const pathParts = relativePath.split(path.sep);
-                
+
                 // Expand only the parent directories
                 for (let i = 0; i < pathParts.length - 1; i++) {
                     const partialPath = path.join(workspaceRoot, ...pathParts.slice(0, i + 1));

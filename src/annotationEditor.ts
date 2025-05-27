@@ -15,6 +15,9 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
     private currentEditingItem: string | undefined;
     private annotations: AnnotationNode = { type: 'dir', subNodes: new Map() };
     private annotationFilePath: string;
+    private annotationDir: string;
+    private annotationFileName: string;
+    private vscodeConfig: vscode.WorkspaceConfiguration;
     private gitignoreParser: GitignoreParser;
     private fileSystemWatcher: vscode.FileSystemWatcher;
     private annotationsExist: boolean = true;
@@ -27,7 +30,12 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
 
 
     constructor(private readonly _extensionUri: vscode.Uri, private workspaceRoot: string) {
-        this.annotationFilePath = path.join(workspaceRoot, '.codebasenotes-annotations.json');
+        // Load User Config
+        this.vscodeConfig = vscode.workspace.getConfiguration('codebaseNotes');
+        this.annotationDir = path.join(this.workspaceRoot, this.vscodeConfig.get("path", ".vscode"));
+        this.annotationFileName = this.vscodeConfig.get('filename', '.codebasenotes-annotations.json');
+        this.annotationFilePath = path.join(this.annotationDir, this.annotationFileName);
+
         this.gitignoreParser = new GitignoreParser(workspaceRoot);
         this.fileSystemWatcher = this.createFileSystemWatcher();
         this.loadAnnotations();
@@ -35,7 +43,7 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
 
     private createFileSystemWatcher(): vscode.FileSystemWatcher {
         const watcher = vscode.workspace.createFileSystemWatcher(
-            new vscode.RelativePattern(this.workspaceRoot, '.codebasenotes-annotations.json')
+            new vscode.RelativePattern(this.annotationDir, this.annotationFileName)
         );
         watcher.onDidDelete(() => this.handleAnnotationFileDeleted());
         watcher.onDidCreate(() => this.loadAnnotations());
@@ -78,13 +86,13 @@ export class AnnotationEditorProvider implements vscode.WebviewViewProvider {
         if (this._view) {
             this.currentEditingItem = element;
             this._view.show?.(true);
-           
+
             if (!this.currentElements.has(element)) {
                 await this.openReferencedFiles(element);
                 this.scheduleClearCurrentElements();
             }
-            await this._view.webview.postMessage({ 
-                type: 'setAnnotation', 
+            await this._view.webview.postMessage({
+                type: 'setAnnotation',
                 itemName: path.basename(element),
                 annotation: this.getAnnotation(element)
             });
